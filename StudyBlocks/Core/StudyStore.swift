@@ -81,6 +81,13 @@ public struct PlanSuggestion: Identifiable {
         let used = Set(blocks.filter { !$0.archived && $0.kind == .lecture && $0.courseID == course.id }.compactMap(\.lesson)).union(completedLessons(course))
         return (1...max(1, course.total)).first { !used.contains($0) }
     }
+    public func plannedBlock(for course: Course, lesson: Int) -> StudyBlock? {
+        blocks.first { !$0.archived && $0.kind == .lecture && $0.courseID == course.id && $0.lesson == lesson && status($0) != .done }
+    }
+    public func courseURL(for block: StudyBlock) -> URL? {
+        guard block.kind == .lecture else { return nil }
+        return course(block.courseID)?.validURL
+    }
     public func completion(_ block: StudyBlock) -> LessonCompletion? {
         guard block.kind == .lecture, let courseID = block.courseID, let lesson = block.lesson else { return nil }
         return completions.first { $0.key == LessonCompletion.key(courseID, lesson) }
@@ -229,6 +236,16 @@ public struct PlanSuggestion: Identifiable {
             return completions.filter { c in !c.isInitial && StudyDate.week(StudyDate.key(c.completedAt)) == goal.week && (goal.courseID == nil ? course(c.courseID)?.subject == goal.subject : c.courseID == goal.courseID) }.count
         }
         return blocks.filter { b in b.kind == goal.kind && b.subject == goal.subject && b.unit == goal.unit && status(b) == .done && completionDate(b).map { StudyDate.week(StudyDate.key($0)) == goal.week } == true }.reduce(0) { $0 + $1.quantity }
+    }
+    public func plannedPending(_ goal: WeeklyGoal) -> Int {
+        if goal.kind == .lecture {
+            return blocks.filter { b in
+                !b.archived && b.kind == .lecture && status(b) != .done && StudyDate.week(b.day) == goal.week && (goal.courseID == nil ? b.subject == goal.subject : b.courseID == goal.courseID)
+            }.count
+        }
+        return blocks.filter { b in
+            !b.archived && b.kind == goal.kind && b.subject == goal.subject && b.unit == goal.unit && status(b) != .done && StudyDate.week(b.day) == goal.week
+        }.reduce(0) { $0 + $1.quantity }
     }
     public func saveRule(_ rule: RecurrenceRule?, title: String, subject: String, startDay: String, weekdays: [Int], interval: Int, enabled: Bool) throws {
         guard !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, StudyDate.valid(startDay), (!weekdays.isEmpty || interval > 0), interval <= 365 else { throw StudyError.invalid("반복할 학습과 요일 또는 간격을 선택해 주세요.") }

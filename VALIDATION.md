@@ -1,85 +1,86 @@
-# 검증 결과
+# 검증 결과 (Study Blocks 1.1)
 
 2026-11-17, macOS 26.6.2 / Apple Silicon / Xcode 27.2.
 
-## 자동 검증
+## 1. 자동 검증 (Unit Tests & Persistence Probe)
 
-`Tools/test.sh`: **XCTest 16개, 실패 0개**. SwiftData 실제 모델과 저장 컨텍스트를 사용합니다.
+`./Tools/test.sh`: **XCTest 17개, 실패 0개**. SwiftData 실제 모델과 저장 컨텍스트(인메모리 및 디스크 저장소)를 사용합니다.
 
-| 검증 | 결과 |
+| 검증 항목 | 결과 |
 | --- | --- |
-| 강의 완료 → 다음 강의, 마지막 강의 → 완강 | 통과 |
-| 중복 완료 방지, 다른 화면에서 완료한 블록의 상태 일치 | 통과 |
-| 완료 취소 → 진도 재계산 | 통과 |
-| 건너뛴 강의, 여러 강의 연속 계획, 중복 계획 방지 | 통과 |
-| 일반 블록 생성·완료, 시청과 문제 풀이의 독립 상태 | 통과 |
-| 미완료 이월의 ID 유지, 과잉 누적 제한 | 통과 |
-| 주간 실제 분량, 초과 달성, 완료 취소 반영 | 통과 |
-| 저장 실패 주입 → 진도·블록·변경 이력 전체 롤백 | 통과 |
-| 총강의 수 축소 확인, 이력 보존, 재확장 | 통과 |
-| 반복 생성 중복 방지, 이동·보관 뒤 중복 방지, 반복 중단 | 통과 |
-| 제안 중복 적용 방지, 수동 계획 보존, 목표 변경 반영 | 통과 |
-| JSON 왕복·동일 ID 복원, 잘못된 버전·중복 데이터 거부, 실패 시 롤백 | 통과 |
-| 한국 자정, 월요일 주 경계, 잘못된 날짜 | 통과 |
-| 블록 재정렬, 날짜 이동 시 원본·복사본 중복 방지 | 통과 |
-| 강좌 이름·과목 변경 시 연결 블록 갱신, 사용자 제목 보존 | 통과 |
-| 축소된 범위 밖 수강 이력 JSON 왕복과 취소 | 통과 |
-| 새 ModelContainer에서 디스크 저장소 다시 열기 | 통과 |
+| 강의 완료 → 다음 강의 자동 계산, 마지막 강의 완료 → 완강 처리 | 통과 |
+| 중복 완료 방지, 다른 화면에서 완료한 블록과 강좌 진도의 상태 일치 | 통과 |
+| 완료 취소 → 강좌 진도 및 다음 강의 재계산 | 통과 |
+| 건너뛴 강의 처리, 여러 강의 연속 계획, 동일 강의 중복 계획 방지 | 통과 |
+| 일반 학습 블록 생성·완료, 강의 시청과 문제 풀이의 독립 상태 유지 | 통과 |
+| 미완료 학습 이월 시 블록 ID 유지, 자동 이월 최대 12개 제한 | 통과 |
+| 주간 실제 달성 분량 계산(초기 진도 제외), 초과 달성 표시, 완료 취소 반영 | 통과 |
+| 저장 실패 주입 시 `ModelContext.rollback()`을 통한 진도·블록·이벤트 전체 롤백 | 통과 |
+| 총강의 수 축소 시 확인 요구, 범위 밖 수강 이력 보존 및 재확장 시 복원 | 통과 |
+| 반복 복습 생성 중복 방지, 날짜 이동·보관 뒤 중복 생성 방지, 반복 중단 | 통과 |
+| 계획 제안 중복 적용 방지, 기존 수동 계획 보존, 목표 변경 반영 | 통과 |
+| JSON 백업 왕복·동일 ID 복원, 잘못된 버전·중복 데이터 거부, 실패 시 롤백 | 통과 |
+| 한국 표준시(`Asia/Seoul`) 자정 경계, 월요일 주간 경계, 잘못된 날짜 검증 | 통과 |
+| 블록 드래그 재정렬, 날짜 이동 시 원본·복사본 중복 방지 | 통과 |
+| 강좌 이름·과목 변경 시 연결 블록 자동 갱신 및 사용자 지정 제목 보존 | 통과 |
+| 축소된 범위 밖 수강 이력 JSON 왕복 및 완료 취소 | 통과 |
+| 새 `ModelContainer`에서 디스크 저장소(`Study.store`) 재오픈 검증 | 통과 |
+| 강좌 URL 검증(`validURL`), 인강 블록 외부 링크 연결, 강의별 계획 여부 및 주간 계획 분량 계산 (`1.1`) | 통과 |
 
-별도의 프로세스 영구 저장 검증도 통과했습니다. 작성 프로세스가 종료된 뒤 읽기 프로세스가 동일 파일을 열었습니다.
+별도 프로세스 간 영구 저장 검증(`PersistenceProbe`)도 통과했습니다. 작성 프로세스가 종료된 뒤 읽기 프로세스가 동일한 `Study.store` 파일을 열어 모든 상태를 검증했습니다.
 
 ```text
 WRITE_OK courses=1 completed=2 next=3
 READ_OK courses=1 completed=2 next=3 blocks=2 weekly=10/20
 ```
 
-격리된 도구 환경에서 CoreData의 저장소 변경 알림 등록 관련 로그가 출력되었지만 위 저장·재읽기 검증과 모든 테스트는 성공했습니다.
+---
 
-## 실제 앱 조작
+## 2. 1.0.0 → 1.1 데이터 호환성 검증
 
-Debug 네이티브 앱을 CUA로 직접 조작했습니다. 검증 데이터는 `build/UICheck/Study.store`에 분리했습니다.
+1.0.0 버전에서 생성된 실제 SwiftData 저장소(`build/UICheck/Study.store` 및 기본 사용자 저장소)와 JSON 백업(`build/UICheck/backup-ui.json`, `formatVersion = 1`)을 1.1 Release 앱(`build/StudyBlocks.app`)에서 그대로 열어 검증했습니다.
 
-- 빈 앱 → 강좌 ‘세젤쉬 확률과 통계’ 등록, 전체 14강 / 기존 완료 12강 입력.
-- 다음 13강을 오늘에 추가 → 카드에서 완료 → 강좌 13/14강 및 다음 14강 표시.
-- 14강 추가·완료 → 14/14강, 완강, 다음 강의 추가 버튼 없음.
-- ⌘Z → 13/14강, 다음 14강으로 복귀.
-- 문제 풀이 ‘미적분Ⅰ 45~52번 풀이’ 8문항 등록·완료 → 기록에 8문항 표시.
-- 주간 인강 4강 목표 추가 → 기존 진도 12강을 제외하고 실제 학습 1/4강 표시.
-- 앱 종료 후 재실행 → 진도, 블록, 문제 수, 목표 보존.
-- JSON 실제 내보내기 → 동일 파일 가져오기 → 확인 → 복원 완료 및 목표 유지.
-- 라이트·다크 화면을 실제 렌더링하여 확인. 검증 후 시스템 모드로 복귀.
+- **Bundle Identifier 보존**: `com.pastelj.studyblocks`
+- **스키마 호환성**: `StudySchemaV1` (`1.0.0`) 유지 — 마이그레이션 손실 없이 기존 강좌, 수강 이력(`LessonCompletion`), 학습 블록, 주간 목표, 반복 규칙, 이벤트가 그대로 로드됨을 확인했습니다.
+- `build/UICheck/release-1.1-launch.json` 확인 결과:
+  - `version = 1.1.0` (`displayVersion = 1.1`)
+  - `rendered = true`, `startupError = ""`
+  - 1.0 저장소의 강좌(`세젤쉬 확률과 통계` 13/14강, 다음 14강), 블록 3개(완료 2개), 주간 목표(`1/4`)가 손실 없이 그대로 열림을 확인했습니다.
 
-파일 대화상자 종료 후 한 차례 CUA 응답 지연이 발생했습니다. 프로세스 샘플에서 앱 메인 스레드는 정상 이벤트 대기 상태였으며 백업 파일 생성과 이후 가져오기·복원도 정상 완료됐습니다.
+---
 
-## 최종 Release 앱
+## 3. UI 렌더링 및 화면 캡처 검증 (Index & Graphite)
 
-`Tools/build.sh`: **BUILD SUCCEEDED**. `lipo -archs` 결과 `x86_64 arm64`. `codesign --verify --deep --strict` 통과.
+1.1 Release 앱을 실행하여 라이트 모드(Paper), 다크 모드(Graphite), 기본 창(`1180×800`) 및 작은 창(`840×600`)에서 실제 SwiftUI 화면을 렌더링하고 캡처하여 시각적 위계와 가독성을 검수했습니다.
 
-제공 파일:
+캡처된 검증 이미지(`Docs/Screenshots/`):
 
-- `build/StudyBlocks.app`
-- `build/StudyBlocks-macOS.zip`
-- `StudyBlocks.xcodeproj`
+- `Docs/Screenshots/today-light.png`: 오늘 화면 (라이트 모드) — 상단 압축 진행 요약 바, 인라인 빠른 추가 바, 핵심/추가 구분, 인강 블록의 `강좌 열기 ↗` 버튼, 완료한 학습 접기 영역 확인
+- `Docs/Screenshots/courses-light.png`: 강좌 화면 (라이트 모드) — 수강 중인 강좌와 완강한 강좌 분리, 진도 바 및 남은 강의 수, `다음(N강) 오늘에 추가` 및 `강좌 열기 ↗` 동작 확인
+- `Docs/Screenshots/plan-light.png`: 계획 화면 (라이트 모드) — 월~일 7일 인덱스 탭, 주간 학습량 목표(`완료` · `계획됨` · `남은 분량` 비교), 선택 날짜 학습 배치 및 반복 복습 규칙 확인
+- `Docs/Screenshots/history-light.png`: 기록 화면 (라이트 모드) — 일일 완료 요약(수강 강의·풀이 문항·복습), 완료한 학습 기록과 접힌 상태의 변경/이월 내역 분리 확인
+- `Docs/Screenshots/today-dark.png`, `Docs/Screenshots/courses-dark.png`: 다크 모드 (Graphite) — 어두운 흑연 배경과 카드 표면, 세이지 그린 강조색, 저채도 과목 태그의 명도 대비 확인
+- `Docs/Screenshots/today-compact.png`: 작은 창(`840×600`)에서의 레이아웃 안정성 및 줄바꿈 확인
 
-Release 앱에서도 기존 Debug 저장소를 열었습니다. CUA에서 Release 창 캡처가 `cgWindowNotFound`로 실패하여, 앱의 SwiftUI `onAppear`에서 선택적으로 작성하는 실제 실행 보고서를 통해 확인했습니다. 이 진단 기능은 명시적인 `--verification-report` 인자가 있을 때만 실행됩니다.
+---
 
-`build/UICheck/release-launch.json`:
+## 4. 최종 Release 빌드 및 패키징
 
-```text
-bundleID = com.pastelj.studyblocks
-version = 1.0.0
-rendered = true
-startupError = ""
-window = 오늘 / visible=true / miniaturized=false / 1180×800
-course = 13/14강, next=14
-blocks = 3, completedBlocks = 2
-weekly = 1/4
-```
+`./Tools/build.sh`: **BUILD SUCCEEDED**.
 
-## 남은 검증 범위
+- **유니버설 바이너리 검증**: `lipo -archs build/StudyBlocks.app/Contents/MacOS/StudyBlocks` → `x86_64 arm64`
+- **서명 검증**: `codesign --verify --deep --strict build/StudyBlocks.app` 통과 (ad hoc 서명)
+- **산출물**:
+  - `build/StudyBlocks.app`
+  - `build/StudyBlocks-macOS.zip`
+  - `Downloads/StudyBlocks-macOS.zip`
+  - `.github/workflows/release.yml` (GitHub Actions 자동 테스트·빌드·릴리스 워크플로)
+  - `RELEASE_NOTES_1.1.md` (1.1 릴리스 노트)
+  - `LICENSE` (MIT License)
 
-- 실제 Mac 재부팅은 수행하지 않았습니다. 디스크 저장 후 프로세스 종료·재실행과 별도 프로세스 읽기로 검증했습니다.
-- Intel 하드웨어와 macOS 14 장치에서 직접 실행하지 않았습니다. 최소 OS 타깃 및 Universal 바이너리 빌드는 통과했습니다.
-- CUA의 좌표 입력이 창을 찾지 못해 카드 드래그·창 리사이즈의 실제 포인터 조작을 확인하지 못했습니다. 정렬·이동 로직은 테스트했으며 메뉴의 위/아래 이동 및 날짜 편집 대체 조작이 있습니다.
-- 미래 스키마 변경의 마이그레이션은 해당 버전을 추가할 때 V1 실제 데이터로 검증해야 합니다. 현재 동일 스키마의 Debug → Release 데이터 보존은 확인했습니다.
-- Developer ID 배포 서명과 Apple 공증은 포함하지 않았습니다. 외부 서비스 설정은 필요 없습니다.
+---
+
+## 5. 환경적 한계 및 참고 사항
+
+- **서명 및 공증**: 유료 Apple Developer Program 인증서를 사용하지 않으므로 Developer ID 서명 및 Apple 공증(Notarization)은 포함되어 있지 않습니다. 외부 Mac에서 다운로드 후 최초 실행 시 Gatekeeper 우회 절차(`우클릭 → 열기` 또는 `개인정보 보호 및 보안 → 없이 열기`)를 `README.md`와 릴리스 노트에 안내했습니다.
+- **물리 장비 범위**: Apple Silicon 환경에서 빌드·실행·검증했으며, Intel Mac 지원은 Universal 바이너리(`x86_64 arm64`) 빌드 및 정적 링크 검증으로 확인했습니다.

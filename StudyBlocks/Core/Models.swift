@@ -25,6 +25,13 @@ public enum BlockStatus: String, Codable, CaseIterable { case pending, active, d
         self.id = id; self.title = title; self.subject = subject; self.teacher = teacher; self.platform = platform
         self.link = link; self.total = total; self.targetDate = targetDate; self.notes = notes; createdAt = Date(); archived = false
     }
+    public var validURL: URL? {
+        let trimmed = link.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, let url = URL(string: trimmed),
+              let scheme = url.scheme?.lowercased(), ["http", "https"].contains(scheme),
+              url.host != nil else { return nil }
+        return url
+    }
 }
 
 @Model public final class LessonCompletion {

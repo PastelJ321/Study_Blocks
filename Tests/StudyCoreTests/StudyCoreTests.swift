@@ -206,4 +206,20 @@ import SwiftData
         XCTAssertEqual(restored.status(restored.blocks[0]), .done)
         XCTAssertEqual(restored.nextLesson(restored.courses[0]), 2)
     }
+    func testCourseURLAndPlannedHelpers() throws {
+        let s = try makeStore()
+        var cd = CourseDraft(); cd.title = "미적분 개념완성"; cd.subject = "수학"; cd.link = "https://www.ebsi.co.kr/course/123"; cd.total = 10; cd.completed = 2
+        let c = try s.addCourse(cd)
+        XCTAssertEqual(c.validURL?.absoluteString, "https://www.ebsi.co.kr/course/123")
+        let b = try lecture(s, c, 3)
+        XCTAssertEqual(s.courseURL(for: b)?.host, "www.ebsi.co.kr")
+        XCTAssertEqual(s.plannedBlock(for: c, lesson: 3)?.id, b.id)
+        try s.saveGoal(nil, week: StudyDate.key(), subject: "수학", kind: .lecture, courseID: c.id, target: 4, unit: "강")
+        let g = s.goals[0]
+        XCTAssertEqual(s.plannedPending(g), 1)
+        try s.setStatus(b, .done)
+        XCTAssertNil(s.plannedBlock(for: c, lesson: 3))
+        XCTAssertEqual(s.plannedPending(g), 0)
+        XCTAssertEqual(s.achieved(g), 1)
+    }
 }
