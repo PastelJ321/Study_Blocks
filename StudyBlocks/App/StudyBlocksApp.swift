@@ -99,6 +99,9 @@ import Combine
             (.history, false, CGSize(width: 1180, height: 800), "history-light.png"),
             (.today, true, CGSize(width: 1180, height: 800), "today-dark.png"),
             (.courses, true, CGSize(width: 1180, height: 800), "courses-dark.png"),
+            (.plan, true, CGSize(width: 1180, height: 800), "plan-dark.png"),
+            (.plan, false, CGSize(width: 800, height: 600), "plan-compact.png"),
+            (.today, true, CGSize(width: 800, height: 600), "today-dark-compact.png"),
             (.today, false, CGSize(width: 840, height: 600), "today-compact.png")
         ]
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -321,21 +324,21 @@ extension Color {
         dark: (1.0, 1.0, 1.0, 0.17)
     )
 
-    /// Low-saturation editorial subject colors adapted for Paper (Light) and Graphite (Dark)
+    /// Subject inks with enough color and contrast on Paper and Graphite surfaces
     static func subject(_ subject: String) -> Color {
         switch subject {
         case "수학":
-            return dynamic(light: (0.24, 0.41, 0.61, 1.0), dark: (0.48, 0.66, 0.86, 1.0))
+            return dynamic(light: (0.16, 0.38, 0.73, 1.0), dark: (0.48, 0.69, 0.98, 1.0))
         case "국어":
-            return dynamic(light: (0.63, 0.36, 0.30, 1.0), dark: (0.84, 0.56, 0.49, 1.0))
+            return dynamic(light: (0.72, 0.29, 0.23, 1.0), dark: (0.97, 0.57, 0.48, 1.0))
         case "영어":
-            return dynamic(light: (0.47, 0.38, 0.60, 1.0), dark: (0.69, 0.60, 0.82, 1.0))
+            return dynamic(light: (0.52, 0.32, 0.74, 1.0), dark: (0.76, 0.61, 0.98, 1.0))
         case "과학":
-            return dynamic(light: (0.21, 0.49, 0.44, 1.0), dark: (0.44, 0.72, 0.66, 1.0))
+            return dynamic(light: (0.08, 0.48, 0.37, 1.0), dark: (0.35, 0.81, 0.64, 1.0))
         case "사회":
-            return dynamic(light: (0.60, 0.46, 0.22, 1.0), dark: (0.82, 0.68, 0.40, 1.0))
+            return dynamic(light: (0.66, 0.43, 0.10, 1.0), dark: (0.95, 0.75, 0.34, 1.0))
         case "한국사":
-            return dynamic(light: (0.51, 0.38, 0.31, 1.0), dark: (0.74, 0.60, 0.52, 1.0))
+            return dynamic(light: (0.57, 0.34, 0.23, 1.0), dark: (0.85, 0.62, 0.45, 1.0))
         default:
             return dynamic(light: (0.40, 0.43, 0.46, 1.0), dark: (0.64, 0.67, 0.70, 1.0))
         }
@@ -604,12 +607,12 @@ struct SubjectTag: View {
         HStack(spacing: 4) {
             Circle()
                 .fill(tint)
-                .frame(width: 5, height: 5)
+                .frame(width: 6, height: 6)
             Text(subject)
-                .font(.system(size: 11, weight: .semibold))
+                .font(.system(size: 12, weight: .semibold))
         }
-        .padding(.horizontal, 7)
-        .padding(.vertical, 3)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
         .foregroundStyle(tint)
         .background(tint.opacity(0.11), in: RoundedRectangle(cornerRadius: IndexTokens.tagRadius))
         .overlay(
@@ -625,10 +628,10 @@ struct SectionLabel: View {
     var body: some View {
         HStack(spacing: 7) {
             Text(title)
-                .font(.system(size: 13, weight: .semibold))
+                .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(Color.graphite)
             Text("\(count)")
-                .font(.system(size: 11, weight: .semibold).monospacedDigit())
+                .font(.system(size: 12, weight: .semibold).monospacedDigit())
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 6)
                 .padding(.vertical, 1.5)
@@ -636,7 +639,7 @@ struct SectionLabel: View {
             Spacer()
             if let trailing {
                 Text(trailing)
-                    .font(.caption.monospacedDigit())
+                    .font(.system(size: 12.5).monospacedDigit())
                     .foregroundStyle(.secondary)
             }
         }

@@ -40,7 +40,7 @@ struct PlanView: View {
                             app.selectedDay = StudyDate.key()
                         } label: {
                             Text("이번 주")
-                                .font(.system(size: 12, weight: .medium))
+                                .font(.system(size: 13, weight: .medium))
                                 .foregroundStyle(Color.graphite)
                                 .padding(.horizontal, 6)
                         }
@@ -63,8 +63,8 @@ struct PlanView: View {
                     .overlay(RoundedRectangle(cornerRadius: IndexTokens.compactRadius).stroke(Color.cardBorder, lineWidth: 1))
                 }
 
-                // 7-Day Weekly Index Strip
-                HStack(spacing: 8) {
+                // One connected weekly calendar, with full-cell selection and drop targets.
+                HStack(spacing: 0) {
                     ForEach(0..<7, id: \.self) { offset in
                         let day = StudyDate.adding(week, days: offset)
                         let list = store.dayBlocks(day)
@@ -75,53 +75,44 @@ struct PlanView: View {
                         Button {
                             app.selectedDay = day
                         } label: {
-                            VStack(spacing: 8) {
+                            VStack(spacing: 10) {
                                 HStack(spacing: 4) {
                                     Text(StudyDate.label(day, format: "E"))
-                                        .font(.system(size: 11, weight: isSelected || isToday ? .semibold : .regular))
+                                        .font(.system(size: 13, weight: isSelected || isToday ? .semibold : .regular))
                                     if isToday {
-                                        Circle()
-                                            .fill(isSelected ? Color.white : Color.studyAccent)
-                                            .frame(width: 4.5, height: 4.5)
+                                        Circle().fill(Color.studyAccent).frame(width: 4, height: 4)
                                     }
                                 }
-                                .foregroundStyle(isSelected ? Color.white.opacity(0.9) : (isToday ? Color.studyAccent : .secondary))
+                                .foregroundStyle(isToday ? Color.studyAccent : .secondary)
 
                                 Text(StudyDate.label(day, format: "d"))
-                                    .font(.system(size: 19, weight: .semibold).monospacedDigit())
-                                    .foregroundStyle(isSelected ? Color.white : Color.graphite)
+                                    .font(.system(size: 23, weight: .semibold).monospacedDigit())
+                                    .foregroundStyle(isSelected ? Color.card : Color.graphite)
+                                    .frame(width: 38, height: 38)
+                                    .background(isSelected ? Color.graphite : .clear, in: Circle())
+                                    .overlay(Circle().stroke(isToday ? Color.studyAccent : .clear, lineWidth: 1.5))
 
-                                if list.isEmpty {
-                                    Text("—")
-                                        .font(.caption2.monospacedDigit())
-                                        .foregroundStyle(isSelected ? Color.white.opacity(0.65) : .secondary)
-                                } else {
-                                    HStack(spacing: 3) {
-                                        if doneCount == list.count {
-                                            Image(systemName: "checkmark")
-                                                .font(.system(size: 8, weight: .bold))
-                                        }
-                                        Text("\(doneCount)/\(list.count)")
-                                            .font(.caption2.weight(.medium).monospacedDigit())
+                                HStack(spacing: 3) {
+                                    if !list.isEmpty && doneCount == list.count {
+                                        Image(systemName: "checkmark").font(.system(size: 9, weight: .bold))
                                     }
-                                    .foregroundStyle(isSelected ? Color.white.opacity(0.92) : (doneCount == list.count ? Color.studyAccent : .secondary))
+                                    Text(list.isEmpty ? "—" : "\(doneCount)/\(list.count)")
+                                        .font(.system(size: 12, weight: .medium).monospacedDigit())
                                 }
+                                .foregroundStyle(!list.isEmpty && doneCount == list.count ? Color.studyAccent : .secondary)
                             }
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(
-                                isSelected ? Color.studyAccent : Color.card,
-                                in: RoundedRectangle(cornerRadius: IndexTokens.compactRadius)
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: IndexTokens.compactRadius)
-                                    .stroke(
-                                        isSelected ? Color.studyAccent : (isToday ? Color.studyAccent.opacity(0.45) : Color.cardBorder),
-                                        lineWidth: isSelected || isToday ? 1.5 : 1
-                                    )
-                            )
+                            .padding(.vertical, 16)
+                            .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
+                        .accessibilityLabel("\(StudyDate.label(day))\(isToday ? ", 오늘" : ""), \(doneCount)/\(list.count)개 완료")
+                        .accessibilityAddTraits(isSelected ? .isSelected : [])
+                        .overlay(alignment: .trailing) {
+                            if offset < 6 {
+                                Rectangle().fill(Color.cardBorder).frame(width: 1).padding(.vertical, 18)
+                            }
+                        }
                         .modifier(DayDropModifier(enabled: !isSnapshotCapture) { sourceID in
                             if let b = store.blocks.first(where: { $0.id == sourceID }) {
                                 app.move(b, to: day)
@@ -129,6 +120,8 @@ struct PlanView: View {
                         })
                     }
                 }
+                .background(Color.card, in: RoundedRectangle(cornerRadius: IndexTokens.cardRadius))
+                .overlay(RoundedRectangle(cornerRadius: IndexTokens.cardRadius).stroke(Color.cardBorder, lineWidth: 1))
 
                 // Weekly Workload Goals Section
                 VStack(alignment: .leading, spacing: 14) {
@@ -138,7 +131,7 @@ struct PlanView: View {
                                 .font(.headline)
                                 .foregroundStyle(Color.graphite)
                             Text("이번 주에 완료한 학습량과 남은 목표 분량을 확인합니다.")
-                                .font(.caption)
+                                .font(.system(size: 12.5))
                                 .foregroundStyle(.secondary)
                         }
                         Spacer()
@@ -147,7 +140,7 @@ struct PlanView: View {
                             showSuggestions = true
                         } label: {
                             Text("계획 제안")
-                                .font(.system(size: 12, weight: .medium))
+                                .font(.system(size: 13, weight: .medium))
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 5)
                                 .foregroundStyle(Color.graphite)
@@ -162,7 +155,7 @@ struct PlanView: View {
                                 Image(systemName: "plus")
                                     .font(.system(size: 10, weight: .semibold))
                                 Text("목표 추가")
-                                    .font(.system(size: 12, weight: .semibold))
+                                    .font(.system(size: 13, weight: .semibold))
                             }
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
@@ -194,40 +187,16 @@ struct PlanView: View {
                                     HStack(spacing: 10) {
                                         SubjectTag(subject: goal.subject)
                                         Text(store.course(goal.courseID)?.title ?? goal.kind.label)
-                                            .font(.system(size: 14, weight: .semibold))
+                                            .font(.system(size: 15, weight: .semibold))
                                             .foregroundStyle(Color.graphite)
-                                            .lineLimit(1)
+                                            .lineLimit(2)
+                                            .fixedSize(horizontal: false, vertical: true)
                                         if store.course(goal.courseID) != nil {
                                             Text("인강")
-                                                .font(.caption2)
+                                                .font(.system(size: 12))
                                                 .foregroundStyle(.secondary)
                                         }
                                         Spacer()
-
-                                        HStack(spacing: 10) {
-                                            Text("완료 \(achieved) / \(goal.target)\(goal.unit)")
-                                                .font(.callout.weight(.semibold).monospacedDigit())
-                                                .foregroundStyle(isMet ? Color.studyAccent : Color.graphite)
-
-                                            if planned > 0 {
-                                                Text("계획됨 \(planned)\(goal.unit)")
-                                                    .font(.caption.monospacedDigit())
-                                                    .padding(.horizontal, 6)
-                                                    .padding(.vertical, 2)
-                                                    .background(Color.surfaceSubtle, in: RoundedRectangle(cornerRadius: 4))
-                                                    .foregroundStyle(.secondary)
-                                            }
-
-                                            if isMet {
-                                                Text(achieved > goal.target ? "초과 달성 +\(achieved - goal.target)\(goal.unit)" : "목표 달성")
-                                                    .font(.caption.weight(.semibold).monospacedDigit())
-                                                    .foregroundStyle(Color.studyAccent)
-                                            } else {
-                                                Text("남은 \(remaining)\(goal.unit)")
-                                                    .font(.caption.weight(.semibold).monospacedDigit())
-                                                    .foregroundStyle(Color.studyAccent)
-                                            }
-                                        }
 
                                         if isSnapshotCapture {
                                             Image(systemName: "ellipsis")
@@ -244,6 +213,31 @@ struct PlanView: View {
                                             }
                                             .menuStyle(.borderlessButton)
                                             .fixedSize()
+                                        }
+                                    }
+
+                                    HStack(spacing: 10) {
+                                        Text("완료 \(achieved) / \(goal.target)\(goal.unit)")
+                                            .font(.callout.weight(.semibold).monospacedDigit())
+                                            .foregroundStyle(isMet ? Color.studyAccent : Color.graphite)
+
+                                        if planned > 0 {
+                                            Text("계획됨 \(planned)\(goal.unit)")
+                                                .font(.system(size: 12.5).monospacedDigit())
+                                                .padding(.horizontal, 6)
+                                                .padding(.vertical, 2)
+                                                .background(Color.surfaceSubtle, in: RoundedRectangle(cornerRadius: 4))
+                                                .foregroundStyle(.secondary)
+                                        }
+
+                                        if isMet {
+                                            Text(achieved > goal.target ? "초과 달성 +\(achieved - goal.target)\(goal.unit)" : "목표 달성")
+                                                .font(.system(size: 12.5).weight(.semibold).monospacedDigit())
+                                                .foregroundStyle(Color.studyAccent)
+                                        } else {
+                                            Text("남은 \(remaining)\(goal.unit)")
+                                                .font(.system(size: 12.5).weight(.semibold).monospacedDigit())
+                                                .foregroundStyle(Color.studyAccent)
                                         }
                                     }
 
@@ -279,7 +273,7 @@ struct PlanView: View {
                                 Image(systemName: "plus")
                                     .font(.system(size: 10, weight: .semibold))
                                 Text("상세 추가")
-                                    .font(.system(size: 11.5, weight: .medium))
+                                    .font(.system(size: 13, weight: .medium))
                             }
                             .padding(.horizontal, 9)
                             .padding(.vertical, 4)
@@ -316,7 +310,7 @@ struct PlanView: View {
                                 .font(.headline)
                                 .foregroundStyle(Color.graphite)
                             Text("지정한 요일이나 간격마다 해당 날짜를 열 때 복습 블록을 자동으로 준비합니다.")
-                                .font(.caption)
+                                .font(.system(size: 12.5))
                                 .foregroundStyle(.secondary)
                         }
                         Spacer()
@@ -327,7 +321,7 @@ struct PlanView: View {
                                 Image(systemName: "plus")
                                     .font(.system(size: 10, weight: .semibold))
                                 Text("반복 추가")
-                                    .font(.system(size: 12, weight: .medium))
+                                    .font(.system(size: 13, weight: .medium))
                             }
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
@@ -347,7 +341,7 @@ struct PlanView: View {
                         ForEach(store.rules) { r in
                             HStack(spacing: 10) {
                                 Image(systemName: "repeat")
-                                    .font(.caption)
+                                    .font(.system(size: 12.5))
                                     .foregroundStyle(r.enabled ? Color.studyAccent : .secondary)
                                 SubjectTag(subject: r.subject)
                                 Text(r.title)
@@ -359,7 +353,7 @@ struct PlanView: View {
                                     ? (r.interval > 0 ? "\(r.interval)일마다" : r.weekdays.sorted().map { ["", "일", "월", "화", "수", "목", "금", "토"][$0] }.joined(separator: "·"))
                                     : "중단됨"
                                 )
-                                .font(.caption.monospacedDigit())
+                                .font(.system(size: 12.5).monospacedDigit())
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 3)
                                 .background(Color.surfaceSubtle, in: RoundedRectangle(cornerRadius: 4))
@@ -369,7 +363,7 @@ struct PlanView: View {
                                     editRule = r
                                 } label: {
                                     Text("수정")
-                                        .font(.caption.weight(.medium))
+                                        .font(.system(size: 12.5).weight(.medium))
                                         .foregroundStyle(.secondary)
                                         .padding(.horizontal, 6)
                                         .padding(.vertical, 3)
@@ -420,7 +414,7 @@ struct SuggestionsView: View {
                         ForEach(suggestions) { s in
                             HStack(spacing: 12) {
                                 Text(StudyDate.label(s.day, format: "M/d (E)"))
-                                    .font(.caption.weight(.semibold).monospacedDigit())
+                                    .font(.system(size: 12.5).weight(.semibold).monospacedDigit())
                                     .foregroundStyle(.secondary)
                                     .frame(width: 72, alignment: .leading)
                                 if let c = store.course(s.courseID) {

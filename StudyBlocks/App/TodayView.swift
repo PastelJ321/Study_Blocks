@@ -41,7 +41,7 @@ struct TodayView: View {
                                         .lineLimit(1)
                                     Spacer()
                                     Text(StudyDate.label(b.day, format: "M/d"))
-                                        .font(.caption.monospacedDigit())
+                                        .font(.system(size: 12.5).monospacedDigit())
                                         .foregroundStyle(.secondary)
                                     Button("오늘로") {
                                         app.move(b, to: StudyDate.key())
@@ -66,7 +66,7 @@ struct TodayView: View {
                                 }
                             }
                             .buttonStyle(.borderless)
-                            .font(.caption.weight(.semibold))
+                            .font(.system(size: 12.5).weight(.semibold))
                             .foregroundStyle(Color.studyAccent)
                         }
                     }
@@ -100,7 +100,7 @@ struct TodayView: View {
                         .padding(.horizontal, 4)
                     }
                 } else {
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 12) {
                         if !pending.isEmpty {
                             SectionLabel(
                                 title: "할 학습",
@@ -114,7 +114,7 @@ struct TodayView: View {
 
                         if !done.isEmpty {
                             IndexDisclosure(isExpanded: $showCompleted) {
-                                VStack(spacing: 7) {
+                                VStack(spacing: 12) {
                                     ForEach(done) { b in
                                         BlockCard(app: app, store: store, block: b)
                                     }
@@ -153,54 +153,56 @@ struct TodayStatusStrip: View {
         let lectureBlocks = blocks.filter { $0.kind == .lecture }
         let lectureDone = done.filter { $0.kind == .lecture }.count
 
-        HStack(spacing: 16) {
-            HStack(spacing: 10) {
-                Text("진도")
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(.secondary)
-                Text("\(doneCount) / \(total)")
-                    .font(.system(size: 15, weight: .semibold).monospacedDigit())
-                    .foregroundStyle(Color.graphite)
-                IndexProgressBar(value: Double(doneCount), total: Double(max(1, total)), tint: .studyAccent, height: 6)
-                    .frame(width: 96)
-                Text(total == 0 ? "—" : "\(pct)%")
-                    .font(.caption.weight(.medium).monospacedDigit())
-                    .foregroundStyle(doneCount == total && total > 0 ? Color.studyAccent : .secondary)
-            }
-
-            Divider().frame(height: 14)
-
-            HStack(spacing: 6) {
-                Text("남은 핵심")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text("\(corePending)개")
-                    .font(.system(size: 13, weight: .semibold).monospacedDigit())
-                    .foregroundStyle(corePending > 0 ? Color.graphite : .secondary)
-            }
-
-            if !lectureBlocks.isEmpty {
-                Divider().frame(height: 14)
-                HStack(spacing: 6) {
-                    Image(systemName: "play.rectangle")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                    Text("인강 \(lectureDone)/\(lectureBlocks.count)강")
-                        .font(.caption.monospacedDigit())
-                        .foregroundStyle(.secondary)
-                }
-            }
-
-            Spacer(minLength: 0)
-
+        let progress = HStack(spacing: 10) {
+            Text("진도").font(.system(size: 12.5)).foregroundStyle(.secondary)
+            Text("\(doneCount) / \(total)")
+                .font(.system(size: 16, weight: .semibold).monospacedDigit())
+                .foregroundStyle(Color.graphite)
+            IndexProgressBar(value: Double(doneCount), total: Double(max(1, total)), tint: .studyAccent, height: 6)
+                .frame(width: 96)
+            Text(total == 0 ? "—" : "\(pct)%")
+                .font(.system(size: 12.5, weight: .medium).monospacedDigit())
+                .foregroundStyle(doneCount == total && total > 0 ? Color.studyAccent : .secondary)
+        }
+        let core = HStack(spacing: 6) {
+            Text("남은 핵심").font(.system(size: 12.5)).foregroundStyle(.secondary)
+            Text("\(corePending)개")
+                .font(.system(size: 13, weight: .semibold).monospacedDigit())
+                .foregroundStyle(corePending > 0 ? Color.graphite : .secondary)
+        }
+        let lecture = Label("인강 \(lectureDone)/\(lectureBlocks.count)강", systemImage: "play.rectangle")
+            .font(.system(size: 12.5).monospacedDigit())
+            .foregroundStyle(.secondary)
+        let remaining = Group {
             if total > 0 && pending.isEmpty {
                 Label("오늘 계획 완료", systemImage: "checkmark.circle.fill")
-                    .font(.caption.weight(.semibold))
+                    .font(.system(size: 12.5, weight: .semibold))
                     .foregroundStyle(Color.studyAccent)
             } else if pending.count > 0 {
                 Text("남은 학습 \(pending.count)개")
-                    .font(.caption.monospacedDigit())
+                    .font(.system(size: 12.5).monospacedDigit())
                     .foregroundStyle(.secondary)
+            }
+        }
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 16) {
+                progress
+                Divider().frame(height: 14)
+                core
+                if !lectureBlocks.isEmpty {
+                    Divider().frame(height: 14)
+                    lecture
+                }
+                Spacer(minLength: 0)
+                remaining
+            }
+            VStack(alignment: .leading, spacing: 12) {
+                HStack { progress; Spacer(); core }
+                HStack {
+                    if !lectureBlocks.isEmpty { lecture }
+                    Spacer()
+                    remaining
+                }
             }
         }
         .padding(.horizontal, 16)
@@ -241,9 +243,9 @@ struct QuickAddBar: View {
                         } label: {
                             HStack(spacing: 4) {
                                 Image(systemName: k.symbol)
-                                    .font(.system(size: 10))
+                                    .font(.system(size: 12))
                                 Text(k.label)
-                                    .font(.system(size: 11, weight: kind == k ? .semibold : .regular))
+                                    .font(.system(size: 13, weight: kind == k ? .semibold : .regular))
                             }
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
@@ -264,7 +266,7 @@ struct QuickAddBar: View {
                     isCore.toggle()
                 } label: {
                     Text(isCore ? "핵심" : "추가")
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.system(size: 12, weight: .semibold))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
                         .foregroundStyle(isCore ? Color.studyAccent : .secondary)
@@ -284,7 +286,7 @@ struct QuickAddBar: View {
                             .font(.caption2.monospacedDigit())
                             .foregroundStyle(.tertiary)
                     }
-                    .font(.caption)
+                    .font(.system(size: 12.5))
                     .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
@@ -374,12 +376,12 @@ struct QuickAddBar: View {
                                         lesson = next
                                     }
                                     .buttonStyle(.borderless)
-                                    .font(.caption)
+                                    .font(.system(size: 12.5))
                                     .foregroundStyle(Color.studyAccent)
                                 }
                             }
                             Text("\(store.completedLessons(c).count)/\(c.total)강 완료")
-                                .font(.caption.monospacedDigit())
+                                .font(.system(size: 12.5).monospacedDigit())
                                 .foregroundStyle(.secondary)
                         }
 
@@ -509,7 +511,7 @@ struct Metric: View {
                 .font(.system(size: 22, weight: .semibold).monospacedDigit())
                 .foregroundStyle(Color.graphite)
             Text(label)
-                .font(.caption)
+                .font(.system(size: 12.5))
                 .foregroundStyle(.secondary)
         }
     }
@@ -525,7 +527,7 @@ struct DayPicker: View {
                     day = StudyDate.key()
                 } label: {
                     Text("오늘")
-                        .font(.system(size: 11.5, weight: .medium))
+                        .font(.system(size: 12.5, weight: .medium))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 5)
                         .foregroundStyle(Color.graphite)
@@ -601,9 +603,9 @@ struct BlockCard: View {
         HStack(spacing: 12) {
             // Left Subject Index Bar
             RoundedRectangle(cornerRadius: 2)
-                .fill(Color.subject(block.subject).opacity(done ? 0.35 : 0.90))
-                .frame(width: 3.5)
-                .padding(.vertical, 8)
+                .fill(Color.subject(block.subject).opacity(done ? 0.55 : 0.95))
+                .frame(width: block.isCore ? 5 : 3)
+                .padding(.vertical, 10)
 
             // Completion Button
             Button {
@@ -614,7 +616,8 @@ struct BlockCard: View {
                 }
             } label: {
                 Image(systemName: done ? "checkmark.circle.fill" : (active ? "play.circle.fill" : "circle"))
-                    .font(.system(size: 21, weight: done ? .regular : .light))
+                    .font(.system(size: 25, weight: done ? .regular : .light))
+                    .frame(width: 30, height: 36)
                     .foregroundStyle(done || active ? Color.studyAccent : Color.secondary.opacity(0.55))
                     .contentTransition(.symbolEffect(.replace))
             }
@@ -623,37 +626,24 @@ struct BlockCard: View {
             .accessibilityLabel(done ? "\(block.title) 완료 취소" : "\(block.title) 완료")
 
             // Primary & Secondary Information Hierarchy
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 7) {
                     SubjectTag(subject: block.subject)
                         .fixedSize()
 
-                    Button {
-                        editing = true
-                    } label: {
-                        Text(block.title)
-                            .font(.system(size: 14.5, weight: done ? .regular : .medium))
-                            .foregroundStyle(done ? .secondary : Color.graphite)
-                            .strikethrough(done, color: .secondary.opacity(0.45))
-                            .multilineTextAlignment(.leading)
-                            .lineLimit(1)
-                    }
-                    .buttonStyle(.plain)
-                    .layoutPriority(1)
-
-                    if block.isCore && !done {
+                    if block.isCore {
                         Text("핵심")
-                            .font(.system(size: 10, weight: .semibold))
-                            .padding(.horizontal, 5)
-                            .padding(.vertical, 1.5)
-                            .foregroundStyle(Color.graphite.opacity(0.75))
-                            .background(Color.surfaceSubtle, in: RoundedRectangle(cornerRadius: 3))
+                            .font(.system(size: 12, weight: .semibold))
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 3)
+                            .foregroundStyle(Color.subject(block.subject))
+                            .background(Color.subject(block.subject).opacity(done ? 0.08 : 0.14), in: RoundedRectangle(cornerRadius: 3))
                             .fixedSize()
                     } else if !block.isCore {
                         Text("추가")
-                            .font(.system(size: 10, weight: .medium))
-                            .padding(.horizontal, 5)
-                            .padding(.vertical, 1.5)
+                            .font(.system(size: 12, weight: .medium))
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 3)
                             .foregroundStyle(.secondary)
                             .background(Color.surfaceSubtle.opacity(0.7), in: RoundedRectangle(cornerRadius: 3))
                             .fixedSize()
@@ -661,9 +651,9 @@ struct BlockCard: View {
 
                     if active {
                         Text("진행 중")
-                            .font(.system(size: 10, weight: .semibold))
+                            .font(.system(size: 12, weight: .semibold))
                             .padding(.horizontal, 6)
-                            .padding(.vertical, 1.5)
+                            .padding(.vertical, 3)
                             .foregroundStyle(Color.studyAccent)
                             .background(Color.studyAccent.opacity(0.12), in: RoundedRectangle(cornerRadius: 3))
                             .fixedSize()
@@ -671,120 +661,138 @@ struct BlockCard: View {
 
                     if block.recurrenceID != nil {
                         Image(systemName: "repeat")
-                            .font(.system(size: 10))
+                            .font(.system(size: 12))
                             .foregroundStyle(.secondary)
                             .help("반복 복습")
                     }
                 }
 
-                // Subtitle line: kind + course metadata / details
-                let metaParts = buildMetadata(course: course, done: done)
-                if !metaParts.isEmpty || !block.details.isEmpty {
-                    HStack(spacing: 6) {
-                        if !metaParts.isEmpty {
-                            Text(metaParts)
-                                .font(.system(size: 11.5).monospacedDigit())
-                                .foregroundStyle(.secondary)
-                                .lineLimit(1)
-                        }
-                        if !block.details.isEmpty {
-                            if !metaParts.isEmpty {
-                                Text("·")
-                                    .font(.caption)
-                                    .foregroundStyle(.tertiary)
-                            }
-                            Text(block.details)
-                                .font(.system(size: 11.5))
-                                .foregroundStyle(.secondary)
-                                .lineLimit(1)
-                        }
-                    }
+                Button {
+                    editing = true
+                } label: {
+                    Text(block.title)
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(done ? Color.graphite.opacity(0.78) : Color.graphite)
+                        .strikethrough(done, color: .secondary.opacity(0.45))
+                        .multilineTextAlignment(.leading)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
-            }
-            .padding(.vertical, 10)
-            .frame(maxWidth: .infinity, alignment: .leading)
+                .buttonStyle(.plain)
+                .layoutPriority(1)
 
-            // Trailing Actions & Workload Badge
-            HStack(spacing: 8) {
-                if block.kind == .lecture {
-                    if let lesson = block.lesson {
-                        Text("\(lesson)강")
-                            .font(.system(size: 11.5, weight: .medium).monospacedDigit())
+                if !block.details.isEmpty {
+                    Text(block.details)
+                        .font(.system(size: 12.5))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                let metadata = Text(buildMetadata(course: course, done: done))
+                    .font(.system(size: 12.5).monospacedDigit())
+                    .foregroundStyle(.secondary)
+                let actions = HStack(spacing: 8) {
+                    if block.kind == .lecture {
+                        if let lesson = block.lesson {
+                            Text("\(lesson)강")
+                                .font(.system(size: 12.5, weight: .medium).monospacedDigit())
+                                .foregroundStyle(done ? .secondary : Color.graphite)
+                                .padding(.horizontal, 7)
+                                .padding(.vertical, 5)
+                                .background(Color.surfaceSubtle, in: RoundedRectangle(cornerRadius: 4))
+                        }
+                        if let url = courseURL {
+                            Link(destination: url) {
+                                HStack(spacing: 3) {
+                                    Text("강좌 열기")
+                                    Image(systemName: "arrow.up.right")
+                                        .font(.system(size: 9, weight: .semibold))
+                                }
+                                .font(.system(size: 12.5, weight: .medium))
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 5)
+                                .foregroundStyle(Color.studyAccent)
+                                .background(Color.studyAccent.opacity(0.11), in: RoundedRectangle(cornerRadius: 5))
+                            }
+                            .buttonStyle(.plain)
+                            .help("외부 인강 플랫폼에서 강좌 열기")
+                        }
+                    } else {
+                        Text("\(block.quantity)\(block.unit)")
+                            .font(.system(size: 12.5, weight: .medium).monospacedDigit())
                             .foregroundStyle(done ? .secondary : Color.graphite)
-                            .padding(.horizontal, 7)
-                            .padding(.vertical, 3)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 5)
                             .background(Color.surfaceSubtle, in: RoundedRectangle(cornerRadius: 4))
                     }
-                    if let url = courseURL {
-                        Link(destination: url) {
-                            HStack(spacing: 3) {
-                                Text("강좌 열기")
-                                Image(systemName: "arrow.up.right")
-                                    .font(.system(size: 9, weight: .semibold))
-                            }
-                            .font(.system(size: 11.5, weight: .medium))
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .foregroundStyle(Color.studyAccent)
-                            .background(Color.studyAccent.opacity(0.11), in: RoundedRectangle(cornerRadius: 5))
+
+                    if !done {
+                        Button {
+                            app.move(block, to: StudyDate.adding(block.day, days: 1))
+                        } label: {
+                            Image(systemName: "arrow.turn.up.right")
+                                .font(.system(size: 12))
+                                .frame(width: 24, height: 24)
                         }
                         .buttonStyle(.plain)
-                        .help("외부 인강 플랫폼에서 강좌 열기")
-                    }
-                } else {
-                    Text("\(block.quantity)\(block.unit)")
-                        .font(.system(size: 11.5, weight: .medium).monospacedDigit())
-                        .foregroundStyle(done ? .secondary : Color.graphite)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 3)
-                        .background(Color.surfaceSubtle, in: RoundedRectangle(cornerRadius: 4))
-                }
-
-                if !done {
-                    Button {
-                        app.move(block, to: StudyDate.adding(block.day, days: 1))
-                    } label: {
-                        Image(systemName: "arrow.turn.up.right")
-                            .font(.system(size: 12))
-                            .frame(width: 24, height: 24)
-                    }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(.secondary)
-                    .help("다음 날로 미루기")
-                }
-
-                if isSnapshotCapture {
-                    Image(systemName: "ellipsis")
-                        .font(.system(size: 12))
                         .foregroundStyle(.secondary)
-                        .frame(width: 22, height: 24)
-                } else {
-                    Menu {
-                        cardMenuItems(done: done, active: active, course: course, courseURL: courseURL)
-                    } label: {
+                        .help("다음 날로 미루기")
+                    }
+
+                    if isSnapshotCapture {
                         Image(systemName: "ellipsis")
                             .font(.system(size: 12))
+                            .foregroundStyle(.secondary)
                             .frame(width: 22, height: 24)
+                    } else {
+                        Menu {
+                            cardMenuItems(done: done, active: active, course: course, courseURL: courseURL)
+                        } label: {
+                            Image(systemName: "ellipsis")
+                                .font(.system(size: 12))
+                                .frame(width: 22, height: 24)
+                        }
+                        .menuStyle(.borderlessButton)
+                        .fixedSize()
+                        .help("학습 메뉴")
                     }
-                    .menuStyle(.borderlessButton)
-                    .fixedSize()
-                    .help("학습 메뉴")
-                }
 
-                Image(systemName: "line.3.horizontal")
-                    .font(.system(size: 11))
-                    .foregroundStyle(.tertiary)
-                    .help("드래그하여 순서 변경")
+                    Image(systemName: "line.3.horizontal")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.tertiary)
+                        .help("드래그하여 순서 변경")
+                }
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 12) {
+                        metadata.lineLimit(1)
+                        Spacer(minLength: 8)
+                        actions.fixedSize()
+                    }
+                    VStack(alignment: .leading, spacing: 8) {
+                        metadata.lineLimit(2).fixedSize(horizontal: false, vertical: true)
+                        actions
+                    }
+                }
             }
+            .padding(.vertical, 16)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.trailing, 14)
         .padding(.leading, 0)
-        .frame(minHeight: 54)
-        .background(done ? Color.cardMuted : Color.card, in: RoundedRectangle(cornerRadius: IndexTokens.cardRadius))
+        .frame(minHeight: 104)
+        .background {
+            RoundedRectangle(cornerRadius: IndexTokens.cardRadius)
+                .fill(done ? Color.cardMuted : Color.card)
+                .overlay {
+                    RoundedRectangle(cornerRadius: IndexTokens.cardRadius)
+                        .fill(Color.subject(block.subject).opacity(done ? 0.045 : (block.isCore ? 0.10 : 0.045)))
+                }
+        }
         .overlay(
             RoundedRectangle(cornerRadius: IndexTokens.cardRadius)
                 .stroke(
-                    isTargeted ? Color.studyAccent : (active ? Color.studyAccent.opacity(0.45) : Color.cardBorder),
+                    isTargeted ? Color.studyAccent : Color.subject(block.subject).opacity(active ? 0.65 : (done ? 0.18 : (block.isCore ? 0.32 : 0.20))),
                     lineWidth: isTargeted ? 2 : 1
                 )
         )
