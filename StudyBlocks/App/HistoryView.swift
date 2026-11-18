@@ -358,7 +358,7 @@ struct SettingsView: View {
                 }
 
                 Section("정보 및 라이선스") {
-                    LabeledContent("버전", value: "Study Blocks (공부 블록) 1.1 (1.1.0)")
+                    LabeledContent("버전", value: "Study Blocks (공부 블록) 1.1.1")
                     LabeledContent("프로젝트", value: "QuadraJ · PastelJ321")
                     LabeledContent("라이선스", value: "MIT License (오픈소스 소프트웨어)")
                     if let repoURL = URL(string: "https://github.com/PastelJ321/Study_Blocks") {

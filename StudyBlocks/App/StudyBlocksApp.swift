@@ -66,7 +66,7 @@ import Combine
                 let report: [String: Any] = [
                     "bundleID": Bundle.main.bundleIdentifier ?? "",
                     "version": Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") ?? "",
-                    "displayVersion": "1.1",
+                    "displayVersion": "1.1.1",
                     "rendered": true,
                     "startupError": self.startupError ?? "",
                     "windows": windows,
